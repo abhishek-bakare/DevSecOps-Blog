@@ -24,7 +24,7 @@ jobs:
             - name: Checkout code
               uses: actions/checkout@v4
             - name: Setup Node.js
-              uses: ./.github/workflows/repeated/action
+              uses: ./.github/workflows/repeated
               with: 
                   component_path: ${{ matrix.components }}
             - name: Run ESlint
@@ -43,7 +43,7 @@ jobs:
             - name: Checkout code
               uses: actions/checkout@v4
             - name: Setup Node.js
-              uses: ./.github/workflows/repeated/action
+              uses: ./.github/workflows/repeated
               with: 
                   component_path: ${{ matrix.components }}
             - name: npm audit
