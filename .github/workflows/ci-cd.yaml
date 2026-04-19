@@ -142,6 +142,7 @@ jobs:
                 #gives scanner 10m to finish after 10m it will cuttoff
                 timeout: "10m"
 
+                
     iac-scan:
         name: "IaC security scan"
         runs-on: ubuntu-latest
