@@ -2,13 +2,19 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
 resources:
-  - be-deployments.yaml
-  - fe-deployments.yaml
+- be-deployments.yaml
+- fe-deployments.yaml
 
 images:
-  - name: abhishekbakare/jerney-frontend
-    newName: ghcr.io/user/repo/jerney-frontend
-    newTag: temporary
-  - name: abhishekbakare/jerney-backend
-    newName: ghcr.io/user/repo/jerney-backend
-    newTag: temporary
+- name: abhishekbakare/jerney-backend
+  newName: ghcr.io/user/repo/jerney-backend
+  newTag: temporary
+- name: abhishekbakare/jerney-backend:latest
+  newName: ghcr.io/abhishek-bakare/DevSecOps-Blog/jerney-backend
+  newTag: 6e4f7ba
+- name: abhishekbakare/jerney-frontend
+  newName: ghcr.io/user/repo/jerney-frontend
+  newTag: temporary
+- name: abhishekbakare/jerney-frontend:latest
+  newName: ghcr.io/abhishek-bakare/DevSecOps-Blog/jerney-frontend
+  newTag: 6e4f7ba
