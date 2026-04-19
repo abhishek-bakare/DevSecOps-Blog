@@ -145,8 +145,8 @@ jobs:
     iac-scan:
         name: "IaC security scan"
         runs-on: ubuntu-latest
-        needs: lint
         continue-on-error: true
+        needs: lint
         steps:
             - name: Checkout code
               uses: actions/checkout@v4
@@ -212,10 +212,10 @@ jobs:
               run: |
                  git config user.name "github-actions[bot]"
                  git config user.email "github-actions[bot]@users.noreply.github.com"
-                 git pull https://github.com/abhishek-bakare/DevSecOps-Blog.git feature 
+                 git pull origin feature --rebase 
                  git add .
                  git diff --cached --quiet || git commit -m "ci: update k8s manifest files with ${{ steps.sha.outputs.short }} [skip ci]"
-                 git push
+                 git push || (git pull origin feature --rebase && git push)
 
 
 
