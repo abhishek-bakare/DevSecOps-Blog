@@ -13,10 +13,10 @@ images:
   newTag: temporary
 - name: abhishekbakare/jerney-backend:latest
   newName: ghcr.io/abhishek-bakare/DevSecOps-Blog/jerney-backend
-  newTag: db1d574
+  newTag: e815148
 - name: abhishekbakare/jerney-frontend
   newName: ghcr.io/user/repo/jerney-frontend
   newTag: temporary
 - name: abhishekbakare/jerney-frontend:latest
   newName: ghcr.io/abhishek-bakare/DevSecOps-Blog/jerney-frontend
-  newTag: db1d574
+  newTag: e815148
