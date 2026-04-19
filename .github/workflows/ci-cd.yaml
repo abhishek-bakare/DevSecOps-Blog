@@ -109,7 +109,6 @@ jobs:
     image-scan:
         name: "Scan ${{ matrix.component }} image"
         runs-on: ubuntu-latest
-        continue-on-error: true
         needs: build
         strategy: 
             matrix:
@@ -145,7 +144,6 @@ jobs:
     iac-scan:
         name: "IaC security scan"
         runs-on: ubuntu-latest
-        continue-on-error: true
         needs: lint
         steps:
             - name: Checkout code
@@ -212,7 +210,7 @@ jobs:
               run: |
                  git config user.name "github-actions[bot]"
                  git config user.email "github-actions[bot]@users.noreply.github.com"
-                 git pull origin feature --rebase 
+                 git pull origin feature
                  git add .
                  git diff --cached --quiet || git commit -m "ci: update k8s manifest files with ${{ steps.sha.outputs.short }} [skip ci]"
                  git push || (git pull origin feature --rebase && git push)
