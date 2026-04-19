@@ -181,12 +181,12 @@ jobs:
             - name: Checkout code
               uses: actions/checkout@v4
             - name: Run Hadolint
-              uses: hadolint/hadolint-actions@v3.1.0
+              uses: hadolint/hadolint-action@v3.1.0
               with:
                   dockerfile: ${{ matrix.component }}/Dockerfile
                   failure-threshold: warning
     update-manifests:
-        name: "Updating K8s manifests"
+        name: "Updating K8s manifests"l
         runs-on: ubuntu-latest
         strategy:
             matrix:
