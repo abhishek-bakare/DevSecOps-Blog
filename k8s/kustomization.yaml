@@ -21,13 +21,13 @@ images:
   newName: ghcr.io/user/repo/jerney-backend
   newTag: temporary
 - name: abhishekbakare/jerney-backend:latest
-  newName: ghcr.io/abhishek-bakare/devsecops-Blog/jerney-backend
+  newName: ghcr.io/abhishek-bakare/devsecops-blog/jerney-backend
   newTag: b179a91
 - name: abhishekbakare/jerney-frontend
   newName: ghcr.io/user/repo/jerney-frontend
   newTag: temporary
 - name: abhishekbakare/jerney-frontend:latest
-  newName: ghcr.io/abhishek-bakare/devsecops-Blog/jerney-frontend
+  newName: ghcr.io/abhishek-bakare/devsecops-blog/jerney-frontend
   newTag: b179a91
 - name: postgres
   newName: postgres
