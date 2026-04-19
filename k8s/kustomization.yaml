@@ -7,6 +7,14 @@ resources:
 - be-deployments.yaml
 - fe-deployments.yaml
 - db-deployments.yaml
+- be-service.yaml
+- be-np.yaml
+- db-service.yaml
+- fe-service.yaml
+- namespace.yaml
+- pvc.yaml
+- secrets.yaml
+- storageclass.yaml
 
 images:
 - name: abhishekbakare/jerney-backend
