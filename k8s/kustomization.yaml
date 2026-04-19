@@ -22,13 +22,13 @@ images:
   newTag: temporary
 - name: abhishekbakare/jerney-backend:latest
   newName: ghcr.io/abhishek-bakare/devsecops-blog/jerney-backend
-  newTag: 0bc2d66
+  newTag: abe57ab
 - name: abhishekbakare/jerney-frontend
   newName: ghcr.io/user/repo/jerney-frontend
   newTag: temporary
 - name: abhishekbakare/jerney-frontend:latest
   newName: ghcr.io/abhishek-bakare/devsecops-blog/jerney-frontend
-  newTag: 0bc2d66
+  newTag: abe57ab
 - name: postgres
   newName: postgres
   newTag: 16-alpine
