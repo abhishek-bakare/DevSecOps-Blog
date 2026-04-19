@@ -24,7 +24,7 @@ jobs:
             - name: Checkout code
               uses: actions/checkout@v4
             - name: Setup Node.js
-              uses: ./.github/workflows/repeated
+              uses: ./.github/workflows/repeated/action
               with: 
                   component_path: ${{ matrix.components }}
             - name: Run ESlint
@@ -43,7 +43,7 @@ jobs:
             - name: Checkout code
               uses: actions/checkout@v4
             - name: Setup Node.js
-              uses: ./.github/workflows/repeated
+              uses: ./.github/workflows/repeated/action
               with: 
                   component_path: ${{ matrix.components }}
             - name: npm audit
@@ -73,7 +73,7 @@ jobs:
             - name: Extract metadata (tags, labels)
               #reference id, so we can use in next steps
               id: meta
-              uses: docker/metadata-action@v4
+              uses: docker/metadata-action@v5
               with: 
                   images: ghcr.io/${{ github.repository }}/jerney-${{ matrix.component }}
                   #tags it with git commit hash sha-12343ddh3
@@ -84,7 +84,7 @@ jobs:
                       type=ref,event=branch
                       type=raw,value=latest,enable{{is_default_branch}}
             - name: Build and push image
-              uses: docker/build-push-actions@v6
+              uses: docker/build-push-action@v6
               with:
                   # which folder to look in for source code
                   context: ./${{ matrix.component }}
@@ -151,7 +151,7 @@ jobs:
             - name: Checkout code
               uses: actions/checkout@v4
             - name: Run checkov on terraform
-              uses: bridgecrewio/checkov-actions@v12
+              uses: bridgecrewio/checkov-action@v12
               with:
                   directory: terraform/
                   framework: terraform
