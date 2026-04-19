@@ -1,6 +1,8 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
-
+metadata:
+  name: jerney-kustomize
+  namespace: jerney
 resources:
 - be-deployments.yaml
 - fe-deployments.yaml
