@@ -186,7 +186,7 @@ jobs:
                   dockerfile: ${{ matrix.component }}/Dockerfile
                   failure-threshold: warning
     update-manifests:
-        name: "Updating K8s manifests"l
+        name: "Updating K8s manifests"
         runs-on: ubuntu-latest
         strategy:
             matrix:
