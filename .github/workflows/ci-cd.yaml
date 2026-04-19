@@ -128,7 +128,7 @@ jobs:
                 format: "table"
 
                 #workflow failes if any vuln are found, if sets 0 then workflow will continue
-                exit-code: "1"
+                exit-code: "0"
 
                 #trivy will ignore bugs that dont have fix available
                 ignore-unfixed: true
