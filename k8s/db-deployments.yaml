@@ -21,6 +21,7 @@ spec:
         app.kubernetes.io/component: database
         app.kubernetes.io/name: jerney-db
     spec:
+      automountServiceAccountToken: false
       containers:
       - name: postgres
         image: postgres:16-alpine
