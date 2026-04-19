@@ -1,0 +1,220 @@
+name: Jerney DevSecOps Workflow
+
+on:
+    push:
+        branches: ["*"]
+    pull_request:
+        branches: ["*"]
+
+env:
+    DOCKER_REGISTRY: ghcr.io
+    BACKEND_IMAGE: ghcr.io/${{ github.repository }}/jerney-backend
+    FRONTEND_IMAGE: ghcr.io/${{ github.repository }}/jerney-frontend
+
+jobs:
+    #stage 1
+    lint:
+        name: "Lint code"
+        runs-on: ubuntu-latest
+        continue-on-error: true
+        strategy:
+            matrix:
+                components: [backend, frontend]
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+            - name: Setup Node.js
+              uses: ./.github/repeated/action
+              with: 
+                  component_path: ${{ matrix.components }}
+            - name: Run ESlint
+              working-directory: ${{ matrix.components }}
+              run: npm run lint
+    
+    #stage 2 SCA (software composition analysis)
+    sca:
+        name: "Dependency audit"
+        runs-on: ubuntu-latest
+        needs: lint
+        strategy: 
+            matrix:
+                components: [backend, frontend]
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+            - name: Setup Node.js
+              uses: ./.github/repeated/action
+              with: 
+                  component_path: ${{ matrix.components }}
+            - name: npm audit
+              working-directory: ${{ matrix.components }}
+              run: npm audit --audit-level=high || true
+    build:
+        name: "build ${{ matrix.component }}"
+        runs-on: ubuntu-latest
+        needs: sca
+        permissions:
+            contents: read
+            packages: write
+        strategy: 
+            matrix:
+                component: [backend, frontend]
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+            - name: Setup docker buildx
+              uses: docker/setup-buildx-action@v3
+            - name: Login to GitHub contianer Registry
+              uses: docker/login-action@v3
+              with:
+                  registry: ghcr.io
+                  username: ${{ github.actor }}
+                  password: ${{ secrets.GITHUB_TOKEN }}
+            - name: Extract metadata (tags, labels)
+              #reference id, so we can use in next steps
+              id: meta
+              uses: docker/metadata-action@v4
+              with: 
+                  images: ghcr.io/${{ github.repository }}/jerney-${{ matrix.component }}
+                  #tags it with git commit hash sha-12343ddh3
+                  #taga it with the branch name
+                  #adds a latest tag but only if u are on default branch
+                  tags: |
+                      type=sha,prefix=
+                      type=ref,event=branch
+                      type=raw,value=latest,enable{{is_default_branch}}
+            - name: Build and push image
+              uses: docker/build-push-actions@v6
+              with:
+                  # which folder to look in for source code
+                  context: ./${{ matrix.component }}
+
+                  #Dockerfile in dir
+                  file: ./${{ matrix.component }}/Dockerfile
+
+                  #Only upload the image to the registry if this is not a Pull Request
+                  push: ${{ github.event_name != 'pull_request' }}
+                  
+                  #pulling tags & labels from meta step
+                  tags: ${{ steps.meta.outputs.tags }}
+                  labels: ${{ steps.meta.outputs.labels }}
+
+                  #GitHub Actions' internal cache to store Docker layers. makes future builds much faster
+                  cache-from: type=gha
+                  cache-to: type=gha,mode=max
+                  #proves where the image come from
+                  provenance: true
+                  #software bill of meterials:generates list of all packages inside image so we can scan
+                  sbom: true
+    image-scan:
+        name: "Scan ${{ matrix.component }} image"
+        runs-on: ubuntu-latest
+        continue-on-error: true
+        needs: build
+        strategy: 
+            matrix:
+                component: [backend, frontend]
+        steps:
+          - name: Checkout code
+            uses: actions/checkout@v4
+          - name: Build image for scanning
+            run: |
+               docker build -t jerney-${{ matrix.component }}:scan ./${{ matrix.component }}
+          - name: Trivy scan
+            uses: aquasecurity/trivy-action@master
+            with:
+                image-ref: "jerney-${{ matrix.component }}:scan"
+                #output in table format
+                format: "table"
+
+                #workflow failes if any vuln are found, if sets 0 then workflow will continue
+                exit-code: "1"
+
+                #trivy will ignore bugs that dont have fix available
+                ignore-unfixed: true
+
+                #scans both os(alpine, debian) and code packages
+                vuln-type: "os,library"
+
+                #filters critical and high results ignoring meduim and low
+                severity: "CRITICAL,HIGH"
+
+                #gives scanner 10m to finish after 10m it will cuttoff
+                timeout: "10m"
+
+    iac-scan:
+        name: "IaC security scan"
+        runs-on: ubuntu-latest
+        needs: lint
+        continue-on-error: true
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+            - name: Run checkov on terraform
+              uses: bridgecrewio/checkov-actions@v12
+              with:
+                  directory: terraform/
+                  framework: terraform
+
+                  #if checkov finds a security violation, the pipeline will fail, if set to true it will only show the warning
+                  soft_fail: false
+
+                  #this allows to ignore some sepcific rules
+                  skip_check: CKV_AWS_39,CKV_AWS_58
+                  output_format: cli
+            - name: Run checkov on K8 manifests
+              uses: bridgecrewio/checkov-actions@v12
+              with:
+                  directory: k8s/
+                  framework: kubernetes
+                  soft_fail: true
+                  output_format: cli
+
+    dockerfile-lint:
+        name: "Linting DOckerfile"
+        runs-on: ubuntu-latest
+        continue-on-error: true
+        strategy:
+            matrix: 
+                component: [backend, frontend]
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+            - name: Run Hadolint
+              uses: hadolint/hadolint-actions@v3.1.0
+              with:
+                  dockerfile: ${{ matrix.component }}/Dockerfile
+                  failure-threshold: warning
+    update-manifests:
+        name: "Updating K8s manifests"
+        runs-on: ubuntu-latest
+        strategy:
+            matrix:
+                component: [backend, frontend]
+        if: github.event_name == 'push'
+        permissions:
+            contents: write
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4
+              with:
+                  token: ${{ secrets.GITHUB_TOKEN }}
+            - name: Get short SHA
+              id: sha
+              run: echo "short=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
+            - name: Update manifests
+              run: |
+                 IMAGE_TAG=${{ steps.sha.outputs.short }}
+                 cd k8s
+                 kustomize edit set image abhishekbakare/jerney-backend:latest=ghcr.io/${{ github.repository }}/jerney-backend:${IMAGE_TAG}
+                 kustomize edit set image abhishekbakare/jerney-frontend:latest=ghcr.io/${{ github.repository }}/jerney-frontend:${IMAGE_TAG}
+            - name: Commit and push manifests files
+              run: |
+                 git config user.name "github-actions[bot]"
+                 git config user.email "github-actions[bot]@users.noreply.github.com"
+                 git add .
+                 git diff --cached --quiet || git commit -m "ci: update k8s manifest files with ${{ steps.sha.outputs.short }} [skip ci]"
+                 git push
+
+
+

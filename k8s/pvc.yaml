@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: jerney-db-pvc
+  namespace: jerney
+  labels: 
+    app.kubernetes.io/part-of: jerney
+    app.kubernetes.io/component: database
+spec:
+  #is the settings how PV mounted by nodes in cluster
+  #ReadWriteOnce: multiple pods on that node share this volume
+  #ReadWriteOncePod: only single pod have access
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: jerney-ebs-sc
+  resources:
+    requests:
+      storage: 10Gi
+
