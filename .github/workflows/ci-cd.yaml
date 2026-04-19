@@ -163,7 +163,7 @@ jobs:
                   skip_check: CKV_AWS_39,CKV_AWS_58
                   output_format: cli
             - name: Run checkov on K8 manifests
-              uses: bridgecrewio/checkov-actions@v12
+              uses: bridgecrewio/checkov-action@v12
               with:
                   directory: k8s/
                   framework: kubernetes
@@ -212,6 +212,7 @@ jobs:
               run: |
                  git config user.name "github-actions[bot]"
                  git config user.email "github-actions[bot]@users.noreply.github.com"
+                 git push https://github.com/abhishek-bakare/DevSecOps-Blog.git feature 
                  git add .
                  git diff --cached --quiet || git commit -m "ci: update k8s manifest files with ${{ steps.sha.outputs.short }} [skip ci]"
                  git push

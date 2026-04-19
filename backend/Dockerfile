@@ -12,7 +12,7 @@ FROM node:20-alpine AS production
 RUN addgroup -S appgroup && adduser -S appuser -G appgroup
 
 #installing alpine Linux dependencies
-RUN apk --no-cache add dumb-init:1.2.5.post1
+RUN apk --no-cache add dumb-init=1.2.5.post1
 
 WORKDIR /app
 
